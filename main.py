@@ -1,12 +1,17 @@
 from gtts import gTTS
 from faster_whisper import WhisperModel
 from openai import OpenAI
+import os
 import pyaudio
 import wave
 
 def main():
     record()
     speechToText()
+
+def playAudio():
+    file = 'song.mp3'
+    os.system("mpg123 " + file)
 
 def record():
     #specs of the recording
@@ -55,6 +60,7 @@ def record():
     wf.close()
     
 def speechToText():
+    #WE ARE USING TINYWHISPER
     #smallest - biggest: tiny, base, small, idk the rest but dont use them (.en makes it english only)
     model_size = "base.en"
 
@@ -65,13 +71,15 @@ def speechToText():
 
     text = ""
 
+    # add openAI for cross examination
     for segment in segments:
         text += segment.text
 
-    client = OpenAI(api_key="")
+    client = OpenAI(api_key="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")
     
+    # chatbot role
     system_data = [
-        {"role": "system", "content": "You are a friend to the user sending their input. Compare the user input to this list of commands [turn right, move forward, turn left, follow me, play playlist, dance]. If you match the input to a command, return ONLY the command as your output (e.g. follow me). If you do not recognize a command, consider it as small talk and response in a friendly manner."},
+        {"role": "system", "content": "You are a friend to the user sending their input. Consider it as small talk and response in a friendly manner. Pretend like you are a human being. Make up preferences if you have none. Be human. Do not say that you are an AI. Your name is Gurt, pronounced ɡərt. Now if the user says 'Play my favorite song.' then ONLY respond with 'Play my favorite song.'"},
         {"role": "user", "content": text}
     ]
 
@@ -83,12 +91,16 @@ def speechToText():
     assistant_response = response.choices[0].message.content
     system_data.append({"role": "assistant", "content": assistant_response})
 
+    # Writing response to file
     file = open("sample.txt", "w")
     file.write(assistant_response)
     file.close()
     
+    # Turning chatgpt response to voiced
     with open("sample.txt", 'r') as file:
         file_content = file.read()
+        if file_content == "Play my favorite song":
+            playAudio()
 
         language = 'en'
         myobj = gTTS(text=file_content, lang=language, tld='co.uk', slow=False)
@@ -97,4 +109,3 @@ def speechToText():
 # so that we could test one function at a time
 if __name__ == "__main__":
     main()
-
