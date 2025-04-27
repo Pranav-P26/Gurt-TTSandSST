@@ -75,7 +75,7 @@ def speechToText():
     for segment in segments:
         text += segment.text
 
-    client = OpenAI(api_key="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")
+    client = OpenAI(api_key="")
     
     # chatbot role
     system_data = [
